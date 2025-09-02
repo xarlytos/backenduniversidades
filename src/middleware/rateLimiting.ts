@@ -41,9 +41,4 @@ export const createRateLimit = rateLimit({
   legacyHeaders: false,
 });
 
-// Add the missing exports
-export const loginLimiter = authRateLimit;
-export const apiLimiter = rateLimitMiddleware;
-export const importLimiter = createRateLimit;
-
 export default rateLimitMiddleware;

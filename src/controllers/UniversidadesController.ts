@@ -4,7 +4,7 @@ import { Universidad } from '../models/Universidad';
 import { Titulacion } from '../models/Titulacion';
 import { Contacto } from '../models/Contacto';
 import { Usuario } from '../models/Usuario';
-import { JerarquiaUsuarios } from '../models/JerarquiaUsuarios';
+// import { JerarquiaUsuarios } from '../models/JerarquiaUsuarios'; // COMENTADO - modelo eliminado
 import { AuditLog, EntidadAudit, AccionAudit } from '../models/AuditLog';
 import { AuthRequest, RolUsuario } from '../types'; // Fixed: Import both from '../types'
 

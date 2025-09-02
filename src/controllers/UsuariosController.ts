@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { Usuario, EstadoUsuario, RolUsuario, IUsuario } from '../models/Usuario';
 import { UsuarioPermiso } from '../models/UsuarioPermiso';
 import { Permiso } from '../models/Permiso';
-import { JerarquiaUsuarios } from '../models/JerarquiaUsuarios';
+// import { JerarquiaUsuarios } from '../models/JerarquiaUsuarios'; // COMENTADO - modelo eliminado
 import { AuditLog, EntidadAudit, AccionAudit } from '../models/AuditLog';
 import { AuthRequest } from '../types';
 import mongoose from 'mongoose';
@@ -593,6 +593,9 @@ export class UsuariosController {
     }
   }
 
+  /*
+  // FUNCIONES TEMPORALMENTE DESHABILITADAS - REQUIEREN REIMPLEMENTACIÓN
+  
   // POST /usuarios/:id/asignar-jefe
   static async asignarJefe(req: AuthRequest, res: Response) {
     try {
@@ -815,6 +818,7 @@ export class UsuariosController {
       });
     }
   }
+  */
 
   // DELETE /usuarios/:id
   static async eliminarUsuario(req: AuthRequest, res: Response) {

@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { Contacto } from '../models/Contacto';
-import { JerarquiaUsuarios } from '../models/JerarquiaUsuarios';
+//  import { JerarquiaUsuarios } from '../models/JerarquiaUsuarios'; // COMENTADO - modelo eliminado
 import { RolUsuario } from '../models/Usuario';
 import { AuthRequest } from '../types';
 import { AuditLog, AccionAudit, EntidadAudit } from '../models/AuditLog';

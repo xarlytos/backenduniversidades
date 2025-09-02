@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { Usuario, EstadoUsuario, RolUsuario, IUsuario } from '../models/Usuario';
 import { UsuarioPermiso } from '../models/UsuarioPermiso';
 import { Permiso } from '../models/Permiso';
-// import { JerarquiaUsuarios } from '../models/JerarquiaUsuarios'; // COMENTADO - modelo eliminado
+import { JerarquiaUsuarios } from '../models/JerarquiaUsuarios'; // RESTAURADO
 import { AuditLog, EntidadAudit, AccionAudit } from '../models/AuditLog';
 import { AuthRequest } from '../types';
 import mongoose from 'mongoose';
@@ -253,21 +253,14 @@ export class UsuariosController {
       await nuevoUsuario.save();
       console.log('✅ Usuario creado exitosamente con ID:', nuevoUsuario._id);
       
-      // Asignar permisos por defecto para usuarios comerciales
+      // Asignar permisos solo si se proporcionan explícitamente
       console.log('🔑 Procesando permisos - Rol:', rol, 'Permisos recibidos:', permisos.length);
       let permisosAAsignar = permisos;
-      
-      // COMENTADO: Ya no asignamos todos los permisos automáticamente a comerciales
-      // if (rol === 'COMERCIAL' && permisosAAsignar.length === 0) {
-      //   console.log('🔑 Usuario comercial sin permisos específicos, asignando TODOS los permisos');
-      //   // Obtener TODOS los permisos disponibles para comerciales
-      //   const todosLosPermisos = await Permiso.find({});
-      //   
-      //   permisosAAsignar = todosLosPermisos.map(p => p._id);
-      //   console.log(`🔑 Asignando TODOS los permisos a usuario comercial: ${todosLosPermisos.map(p => p.clave).join(', ')}`);
-      // }
-      
-      // Solo asignar permisos si se proporcionaron explícitamente
+
+      // ELIMINADO: Ya no se asignan permisos básicos automáticamente a comerciales
+      // Los permisos deben ser asignados explícitamente por un administrador
+
+      // Asignar permisos solo si se proporcionan
       if (permisosAAsignar.length > 0) {
         console.log('🔑 Asignando', permisosAAsignar.length, 'permisos al usuario');
         const permisosValidos = await Permiso.find({ _id: { $in: permisosAAsignar } });
@@ -281,7 +274,7 @@ export class UsuariosController {
         await UsuarioPermiso.insertMany(usuarioPermisos);
         console.log('✅ Permisos asignados correctamente');
       } else {
-        console.log('ℹ️ No hay permisos para asignar - Usuario comercial creado sin permisos');
+        console.log('ℹ️ No hay permisos para asignar - Usuario creado sin permisos');
       }
       
       // Registrar en auditoría
@@ -593,10 +586,6 @@ export class UsuariosController {
     }
   }
 
-  /*
-  // FUNCIONES TEMPORALMENTE DESHABILITADAS - REQUIEREN REIMPLEMENTACIÓN
-  // ESTAS FUNCIONES ESTÁN ROTAS - COMENTADAS TEMPORALMENTE
-  
   // POST /usuarios/:id/asignar-jefe
   static async asignarJefe(req: AuthRequest, res: Response) {
     try {
@@ -656,28 +645,27 @@ export class UsuariosController {
         });
       }
       
-      // COMENTADO: Modelo JerarquiaUsuarios eliminado
       // Verificar si ya existe una relación jerárquica para este subordinado
-      // const relacionExistente = await JerarquiaUsuarios.findOne({ subordinadoId: id });
+      const relacionExistente = await JerarquiaUsuarios.findOne({ subordinadoId: id });
       
-      // let jerarquia;
-      // let accion = 'crear';
+      let jerarquia;
+      let accion = 'crear';
       
-      // if (relacionExistente) {
-      //   // Actualizar la relación existente
-      //   console.log('🔄 Actualizando relación jerárquica existente');
-      //   relacionExistente.jefeId = new mongoose.Types.ObjectId(usuarioId);
-      //   jerarquia = await relacionExistente.save();
-      //   accion = 'actualizar';
-      // } else {
-      //   // Crear nueva relación jerárquica
-      //   console.log('➕ Creando nueva relación jerárquica');
-      //   jerarquia = new JerarquiaUsuarios({
-      //     subordinadoId: new mongoose.Types.ObjectId(id),
-      //     jefeId: new mongoose.Types.ObjectId(usuarioId)
-      //   });
-      //   await jerarquia.save();
-      // }
+      if (relacionExistente) {
+        // Actualizar la relación existente
+        console.log('🔄 Actualizando relación jerárquica existente');
+        relacionExistente.jefeId = new mongoose.Types.ObjectId(usuarioId);
+        jerarquia = await relacionExistente.save();
+        accion = 'actualizar';
+      } else {
+        // Crear nueva relación jerárquica
+        console.log('➕ Creando nueva relación jerárquica');
+        jerarquia = new JerarquiaUsuarios({
+          subordinadoId: new mongoose.Types.ObjectId(id),
+          jefeId: new mongoose.Types.ObjectId(usuarioId)
+        });
+        await jerarquia.save();
+      }
       
       // Registrar en auditoría
       console.log('📋 Registrando en auditoría');
@@ -690,7 +678,7 @@ export class UsuariosController {
           jerarquia: {
             subordinado: { id: subordinado._id, nombre: subordinado.nombre },
             jefe: { id: jefe._id, nombre: jefe.nombre },
-            accion: 'crear'
+            accion
           }
         },
         ip: req.ip,
@@ -700,7 +688,7 @@ export class UsuariosController {
       console.log('✅ Jefe asignado exitosamente:', {
         subordinado: subordinado.nombre,
         jefe: jefe.nombre,
-        accion: 'crear'
+        accion
       });
       
       res.json({
@@ -760,23 +748,22 @@ export class UsuariosController {
         });
       }
       
-      // COMENTADO: Modelo JerarquiaUsuarios eliminado
       // Buscar la relación jerárquica antes de eliminarla
-      // const relacionExistente = await JerarquiaUsuarios.findOne({ subordinadoId: id });
+      const relacionExistente = await JerarquiaUsuarios.findOne({ subordinadoId: id });
       
-      // if (!relacionExistente) {
-      //   console.log('❌ No se encontró relación jerárquica para:', id);
-      //   return res.status(404).json({
-      //     success: false,
-      //     message: 'No se encontró una relación jerárquica para este usuario'
-      //   });
-      // }
+      if (!relacionExistente) {
+        console.log('❌ No se encontró relación jerárquica para:', id);
+        return res.status(404).json({
+          success: false,
+          message: 'No se encontró una relación jerárquica para este usuario'
+        });
+      }
       
       // Obtener información del jefe que se va a remover
-      // const jefeRemovido = await Usuario.findById(relacionExistente.jefeId);
+      const jefeRemovido = await Usuario.findById(relacionExistente.jefeId);
       
       // Eliminar la relación jerárquica
-      // await JerarquiaUsuarios.findOneAndDelete({ subordinadoId: id });
+      await JerarquiaUsuarios.findOneAndDelete({ subordinadoId: id });
       
       // Registrar en auditoría
       console.log('📋 Registrando en auditoría');
@@ -788,7 +775,7 @@ export class UsuariosController {
         despues: {
           jerarquia: {
             subordinado: { id: subordinado._id, nombre: subordinado.nombre },
-            jefeRemovido: null,
+            jefeRemovido: jefeRemovido ? { id: jefeRemovido._id, nombre: jefeRemovido.nombre } : null,
             accion: 'remover'
           }
         },
@@ -798,7 +785,7 @@ export class UsuariosController {
       
       console.log('✅ Jefe removido exitosamente:', {
         subordinado: subordinado.nombre,
-        jefeRemovido: 'Desconocido'
+        jefeRemovido: jefeRemovido?.nombre || 'Desconocido'
       });
       
       res.json({
@@ -821,7 +808,6 @@ export class UsuariosController {
       });
     }
   }
-  */
 
   // DELETE /usuarios/:id
   static async eliminarUsuario(req: AuthRequest, res: Response) {
@@ -1014,6 +1000,89 @@ export class UsuariosController {
     } catch (error) {
       console.error('💥 Error al actualizar permisos:', error);
       console.error('📊 Stack trace:', error instanceof Error ? error.stack : 'No stack available');
+      res.status(500).json({
+        success: false,
+        message: 'Error interno del servidor'
+      });
+    }
+  }
+
+  // Función para asignar permisos básicos a comerciales existentes
+  static async asignarPermisosBasicosAComerciales(req: AuthRequest, res: Response) {
+    try {
+      console.log('🔧 Iniciando asignación de permisos básicos a comerciales existentes');
+      
+      // Obtener todos los usuarios comerciales
+      const comerciales = await Usuario.find({ rol: 'COMERCIAL' });
+      console.log(`👥 Encontrados ${comerciales.length} usuarios comerciales`);
+
+      // Obtener permisos básicos
+      const permisosBasicos = await Permiso.find({
+        clave: {
+          $in: [
+            'VER_CONTACTOS',
+            'CREAR_CONTACTOS', 
+            'EDITAR_CONTACTOS',
+            'IMPORTAR_CONTACTOS',
+            'EXPORTAR_CONTACTOS'
+          ]
+        }
+      });
+      
+      console.log(`🔑 Encontrados ${permisosBasicos.length} permisos básicos`);
+
+      let asignados = 0;
+      let yaExistentes = 0;
+
+      for (const comercial of comerciales) {
+        console.log(`👤 Procesando usuario: ${comercial.nombre}`);
+        
+        for (const permiso of permisosBasicos) {
+          // Verificar si ya tiene el permiso
+          const existePermiso = await UsuarioPermiso.findOne({
+            usuarioId: comercial._id,
+            permisoId: permiso._id
+          });
+
+          if (!existePermiso) {
+            // Asignar el permiso
+            await UsuarioPermiso.create({
+              usuarioId: comercial._id,
+              permisoId: permiso._id
+            });
+            console.log(`  ✅ Asignado: ${permiso.clave}`);
+            asignados++;
+          } else {
+            yaExistentes++;
+          }
+        }
+      }
+
+      // Registrar en auditoría
+      await AuditLog.create({
+        usuarioId: req.user?.userId,
+        entidad: EntidadAudit.USUARIO,
+        entidadId: '',
+        accion: AccionAudit.UPDATE,
+        despues: {
+          detalles: `Asignación masiva de permisos básicos a comerciales: ${asignados} permisos asignados`
+        },
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+
+      res.json({
+        success: true,
+        message: 'Permisos básicos asignados correctamente',
+        data: {
+          comerciales: comerciales.length,
+          permisosAsignados: asignados,
+          permisosYaExistentes: yaExistentes
+        }
+      });
+      
+    } catch (error) {
+      console.error('❌ Error asignando permisos básicos:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor'

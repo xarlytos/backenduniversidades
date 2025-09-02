@@ -1,11 +1,11 @@
 import { Response } from 'express';
 import { Contacto } from '../models/Contacto';
-//  import { JerarquiaUsuarios } from '../models/JerarquiaUsuarios'; // COMENTADO - modelo eliminado
+import { JerarquiaUsuarios } from '../models/JerarquiaUsuarios'; // RESTAURADO
 import { RolUsuario } from '../models/Usuario';
 import { AuthRequest } from '../types';
 import { AuditLog, AccionAudit, EntidadAudit } from '../models/AuditLog';
-import { Permiso } from '../models/Permiso'; // ← Agregar esta línea
-import { UsuarioPermiso } from '../models/UsuarioPermiso'; // ← Agregar esta línea
+import { Permiso } from '../models/Permiso';
+import { UsuarioPermiso } from '../models/UsuarioPermiso';
 
 
 export class ContactosController {
@@ -377,40 +377,49 @@ export class ContactosController {
       return []; // Admin ve todos, no aplicar filtro
     }
   
-  // Para comerciales, sin jerarquía - solo sus propios contactos
-  // const subordinados = await ContactosController.getSubordinados(usuarioId);
-  const subordinados: string[] = []; // Temporalmente sin jerarquía
+  // Para comerciales, incluir sus subordinados
+  const subordinados = await ContactosController.getSubordinados(usuarioId);
   const comercialesVisibles = [usuarioId, ...subordinados];
   
   console.log(`👥 Comerciales visibles para ${usuarioId}:`, comercialesVisibles);
     
-    const contactos = await Contacto.find({
-      $or: [
-        { comercialId: { $in: comercialesVisibles } }, // Contactos asignados a él y sus subordinados
-        { createdBy: usuarioId } // Contactos creados por él
-      ]
-    }).select('_id');
-    
-    console.log(`📊 Total contactos encontrados: ${contactos.length}`);
-    
-    return contactos.map(c => c._id.toString());
+  const contactos = await Contacto.find({
+    $or: [
+      { comercialId: { $in: comercialesVisibles } }, // Contactos asignados a él y sus subordinados
+      { createdBy: usuarioId } // Contactos creados por él
+    ]
+  }).select('_id');
+  
+  console.log(`📊 Total contactos encontrados: ${contactos.length}`);
+  
+  return contactos.map(c => c._id.toString());
   }
 
-  // COMENTADO: Función que usaba JerarquiaUsuarios (modelo eliminado)
-  /*
+  // Función para obtener subordinados recursivamente
   static async getSubordinados(jefeId: string): Promise<string[]> {
-    const subordinadosDirectos = await JerarquiaUsuarios.find({ jefeId }).select('subordinadoId');
-    let todosLosSubordinados = subordinadosDirectos.map(s => s.subordinadoId.toString());
-    
-    // Recursivamente obtener subordinados de subordinados
-    for (const subordinadoId of subordinadosDirectos.map(s => s.subordinadoId.toString())) {
-      const subSubordinados = await ContactosController.getSubordinados(subordinadoId);
-      todosLosSubordinados = [...todosLosSubordinados, ...subSubordinados];
+    try {
+      console.log(`🔍 Buscando subordinados para jefe: ${jefeId}`);
+      
+      const subordinadosDirectos = await JerarquiaUsuarios.find({ jefeId }).select('subordinadoId');
+      let todosLosSubordinados = subordinadosDirectos.map(s => s.subordinadoId.toString());
+      
+      console.log(`👥 Subordinados directos encontrados: ${todosLosSubordinados.length}`);
+      
+      // Recursivamente obtener subordinados de subordinados
+      for (const subordinadoId of subordinadosDirectos.map(s => s.subordinadoId.toString())) {
+        const subSubordinados = await ContactosController.getSubordinados(subordinadoId);
+        todosLosSubordinados = [...todosLosSubordinados, ...subSubordinados];
+      }
+      
+      const subordinadosUnicos = [...new Set(todosLosSubordinados)];
+      console.log(`📊 Total subordinados (incluyendo sub-subordinados): ${subordinadosUnicos.length}`);
+      
+      return subordinadosUnicos;
+    } catch (error) {
+      console.error('❌ Error obteniendo subordinados:', error);
+      return [];
     }
-    
-    return [...new Set(todosLosSubordinados)];
   }
-  */
 
   static async tieneAccesoContacto(usuarioId: string, rol: string, contactoId: string): Promise<boolean> {
     if (rol === RolUsuario.ADMIN) return true;
@@ -599,8 +608,7 @@ export class ContactosController {
       }
 
       // Obtener todos los subordinados del comercial
-      // const subordinados = await ContactosController.getSubordinados(comercialId);
-      const subordinados: string[] = []; // Temporalmente sin jerarquía
+      const subordinados = await ContactosController.getSubordinados(comercialId);
       const comercialesIncluidos = [comercialId, ...subordinados];
       
       console.log(`📊 Obteniendo contactos para comercial ${comercialId} y subordinados:`, comercialesIncluidos);

@@ -79,8 +79,6 @@ router.put('/:id/permisos',
 );
 
 // Gestión de jerarquías
-// COMENTADO: Rutas que usaban funciones eliminadas de UsuariosController
-/*
 router.post('/:id/asignar-jefe', 
   (req, res, next) => {
     console.log('🔗 POST /:id/asignar-jefe - Asignando jefe a usuario');
@@ -99,6 +97,5 @@ router.delete('/:id/remover-jefe',
   requirePermission('GESTIONAR_USUARIOS'), 
   UsuariosController.removerJefe
 );
-*/
 
 export default router;

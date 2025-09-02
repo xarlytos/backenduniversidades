@@ -395,6 +395,8 @@ export class ContactosController {
     return contactos.map(c => c._id.toString());
   }
 
+  // COMENTADO: Función que usaba JerarquiaUsuarios (modelo eliminado)
+  /*
   static async getSubordinados(jefeId: string): Promise<string[]> {
     const subordinadosDirectos = await JerarquiaUsuarios.find({ jefeId }).select('subordinadoId');
     let todosLosSubordinados = subordinadosDirectos.map(s => s.subordinadoId.toString());
@@ -407,6 +409,7 @@ export class ContactosController {
     
     return [...new Set(todosLosSubordinados)];
   }
+  */
 
   static async tieneAccesoContacto(usuarioId: string, rol: string, contactoId: string): Promise<boolean> {
     if (rol === RolUsuario.ADMIN) return true;

@@ -358,6 +358,8 @@ export class UniversidadesController {
 
   // Obtener universidades con titulaciones y estadísticas de alumnos por curso
   // Método auxiliar para obtener subordinados recursivamente
+  // COMENTADO: Función que usaba JerarquiaUsuarios (modelo eliminado)
+  /*
   static async getSubordinados(jefeId: string): Promise<string[]> {
     const subordinadosDirectos = await JerarquiaUsuarios.find({ jefeId }).select('subordinadoId');
     let todosLosSubordinados = subordinadosDirectos.map(s => s.subordinadoId.toString());
@@ -370,6 +372,7 @@ export class UniversidadesController {
     
     return [...new Set(todosLosSubordinados)];
   }
+  */
 
   static async obtenerUniversidadesConEstadisticas(req: AuthRequest, res: Response) {
     try {
@@ -390,6 +393,7 @@ export class UniversidadesController {
         comercialesVisibles = todosLosUsuarios.map(u => u._id.toString());
         console.log(`👥 ADMIN - Comerciales visibles (todos):`, comercialesVisibles.length);
       } else {
+         // COMENTADO: Funcionalidad de jerarquía temporalmente deshabilitada
          // Para comerciales, obtener subordinados del usuario actual
          if (!userId) {
            return res.status(401).json({
@@ -397,8 +401,9 @@ export class UniversidadesController {
              message: 'Usuario no autenticado'
            });
          }
-         const subordinados = await UniversidadesController.getSubordinados(userId);
-         comercialesVisibles = [userId, ...subordinados];
+         // const subordinados = await UniversidadesController.getSubordinados(userId);
+         // comercialesVisibles = [userId, ...subordinados];
+         comercialesVisibles = [userId]; // Solo el usuario actual por ahora
          console.log(`👥 Comerciales visibles para ${userId}:`, comercialesVisibles);
        }
       

@@ -595,6 +595,7 @@ export class UsuariosController {
 
   /*
   // FUNCIONES TEMPORALMENTE DESHABILITADAS - REQUIEREN REIMPLEMENTACIÓN
+  // ESTAS FUNCIONES ESTÁN ROTAS - COMENTADAS TEMPORALMENTE
   
   // POST /usuarios/:id/asignar-jefe
   static async asignarJefe(req: AuthRequest, res: Response) {
@@ -655,27 +656,28 @@ export class UsuariosController {
         });
       }
       
+      // COMENTADO: Modelo JerarquiaUsuarios eliminado
       // Verificar si ya existe una relación jerárquica para este subordinado
-      const relacionExistente = await JerarquiaUsuarios.findOne({ subordinadoId: id });
+      // const relacionExistente = await JerarquiaUsuarios.findOne({ subordinadoId: id });
       
-      let jerarquia;
-      let accion = 'crear';
+      // let jerarquia;
+      // let accion = 'crear';
       
-      if (relacionExistente) {
-        // Actualizar la relación existente
-        console.log('🔄 Actualizando relación jerárquica existente');
-        relacionExistente.jefeId = new mongoose.Types.ObjectId(usuarioId);
-        jerarquia = await relacionExistente.save();
-        accion = 'actualizar';
-      } else {
-        // Crear nueva relación jerárquica
-        console.log('➕ Creando nueva relación jerárquica');
-        jerarquia = new JerarquiaUsuarios({
-          subordinadoId: new mongoose.Types.ObjectId(id),
-          jefeId: new mongoose.Types.ObjectId(usuarioId)
-        });
-        await jerarquia.save();
-      }
+      // if (relacionExistente) {
+      //   // Actualizar la relación existente
+      //   console.log('🔄 Actualizando relación jerárquica existente');
+      //   relacionExistente.jefeId = new mongoose.Types.ObjectId(usuarioId);
+      //   jerarquia = await relacionExistente.save();
+      //   accion = 'actualizar';
+      // } else {
+      //   // Crear nueva relación jerárquica
+      //   console.log('➕ Creando nueva relación jerárquica');
+      //   jerarquia = new JerarquiaUsuarios({
+      //     subordinadoId: new mongoose.Types.ObjectId(id),
+      //     jefeId: new mongoose.Types.ObjectId(usuarioId)
+      //   });
+      //   await jerarquia.save();
+      // }
       
       // Registrar en auditoría
       console.log('📋 Registrando en auditoría');
@@ -688,7 +690,7 @@ export class UsuariosController {
           jerarquia: {
             subordinado: { id: subordinado._id, nombre: subordinado.nombre },
             jefe: { id: jefe._id, nombre: jefe.nombre },
-            accion
+            accion: 'crear'
           }
         },
         ip: req.ip,
@@ -698,12 +700,12 @@ export class UsuariosController {
       console.log('✅ Jefe asignado exitosamente:', {
         subordinado: subordinado.nombre,
         jefe: jefe.nombre,
-        accion
+        accion: 'crear'
       });
       
       res.json({
         success: true,
-        message: `Jefe ${accion === 'crear' ? 'asignado' : 'actualizado'} exitosamente`,
+        message: 'Jefe asignado exitosamente',
         jerarquia: {
           subordinado: {
             id: subordinado._id,
@@ -758,22 +760,23 @@ export class UsuariosController {
         });
       }
       
+      // COMENTADO: Modelo JerarquiaUsuarios eliminado
       // Buscar la relación jerárquica antes de eliminarla
-      const relacionExistente = await JerarquiaUsuarios.findOne({ subordinadoId: id });
+      // const relacionExistente = await JerarquiaUsuarios.findOne({ subordinadoId: id });
       
-      if (!relacionExistente) {
-        console.log('❌ No se encontró relación jerárquica para:', id);
-        return res.status(404).json({
-          success: false,
-          message: 'No se encontró una relación jerárquica para este usuario'
-        });
-      }
+      // if (!relacionExistente) {
+      //   console.log('❌ No se encontró relación jerárquica para:', id);
+      //   return res.status(404).json({
+      //     success: false,
+      //     message: 'No se encontró una relación jerárquica para este usuario'
+      //   });
+      // }
       
       // Obtener información del jefe que se va a remover
-      const jefeRemovido = await Usuario.findById(relacionExistente.jefeId);
+      // const jefeRemovido = await Usuario.findById(relacionExistente.jefeId);
       
       // Eliminar la relación jerárquica
-      await JerarquiaUsuarios.findOneAndDelete({ subordinadoId: id });
+      // await JerarquiaUsuarios.findOneAndDelete({ subordinadoId: id });
       
       // Registrar en auditoría
       console.log('📋 Registrando en auditoría');
@@ -785,7 +788,7 @@ export class UsuariosController {
         despues: {
           jerarquia: {
             subordinado: { id: subordinado._id, nombre: subordinado.nombre },
-            jefeRemovido: jefeRemovido ? { id: jefeRemovido._id, nombre: jefeRemovido.nombre } : null,
+            jefeRemovido: null,
             accion: 'remover'
           }
         },
@@ -795,7 +798,7 @@ export class UsuariosController {
       
       console.log('✅ Jefe removido exitosamente:', {
         subordinado: subordinado.nombre,
-        jefeRemovido: jefeRemovido?.nombre || 'Desconocido'
+        jefeRemovido: 'Desconocido'
       });
       
       res.json({

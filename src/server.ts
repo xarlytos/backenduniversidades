@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 3001;
 
 // Configuración de CORS
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['https://contactosuniversidades-production-f998.up.railway.app'],
+  origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['https://frontenduniversidades.vercel.app'],
   credentials: process.env.CORS_CREDENTIALS === 'true',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']

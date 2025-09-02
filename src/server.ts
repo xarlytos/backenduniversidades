@@ -57,7 +57,7 @@ app.use('/api/estadisticas', authenticateToken, estadisticasRoutes);
 app.use('/api/universidades', authenticateToken, universidadesRoutes);
 app.use('/api/titulaciones', authenticateToken, titulacionesRoutes);
 
-// ELIMINAR esta línea que está causando el problema:
+// COMENTAR O ELIMINAR esta línea problemática:
 // app.use('/api', authenticateToken);
 
 // Middleware de manejo de errores

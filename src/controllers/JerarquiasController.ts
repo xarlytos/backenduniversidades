@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { JerarquiaUsuarios } from '../models/JerarquiaUsuarios';
-import { Usuario } from '../models/Usuario';
+import { Usuario, RolUsuario } from '../models/Usuario';
 import { AuditLog } from '../models/AuditLog';
 import { AuthRequest } from '../types';
 import mongoose from 'mongoose';
@@ -19,7 +19,7 @@ export class JerarquiasController {
       }
 
       // Si es comercial, solo puede ver sus propias jerarquías
-      if (req.user?.rol === 'comercial') {
+      if (req.user?.rol === RolUsuario.COMERCIAL) {
         filter.usuarioSuperior = req.user._id;
       }
 
@@ -65,8 +65,8 @@ export class JerarquiasController {
       }
 
       // Verificar permisos
-      if (req.user?.rol === 'comercial' && 
-          jerarquia.usuarioSuperior._id.toString() !== req.user._id.toString()) {
+      if (req.user?.rol === RolUsuario.COMERCIAL && 
+          jerarquia.usuarioSuperior._id.toString() !== req.user._id?.toString()) {
         return res.status(403).json({ 
           error: 'No tienes permisos para ver esta jerarquía' 
         });
@@ -103,7 +103,7 @@ export class JerarquiasController {
         return res.status(400).json({ error: 'Usuario superior no encontrado' });
       }
 
-      if (superior.rol !== 'comercial') {
+      if (superior.rol !== RolUsuario.COMERCIAL) {
         return res.status(400).json({ 
           error: 'El usuario superior debe tener rol comercial' 
         });

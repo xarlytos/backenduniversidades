@@ -2,38 +2,48 @@ import { Schema, model, Document, Types } from 'mongoose';
 
 export interface IJerarquiaUsuarios extends Document {
   _id: string;
-  subordinadoId: Types.ObjectId;
-  jefeId: Types.ObjectId;
+  usuarioSuperior: Types.ObjectId;
+  usuariosSubordinados: Types.ObjectId[];
+  descripcion?: string;
+  creadoPor?: Types.ObjectId;
+  fechaCreacion: Date;
+  fechaActualizacion: Date;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const jerarquiaUsuariosSchema = new Schema<IJerarquiaUsuarios>({
-  subordinadoId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Usuario',
-    required: true,
-    unique: true // Un comercial solo puede tener un jefe
-  },
-  jefeId: {
+  usuarioSuperior: {
     type: Schema.Types.ObjectId,
     ref: 'Usuario',
     required: true
+  },
+  usuariosSubordinados: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Usuario'
+  }],
+  descripcion: {
+    type: String,
+    trim: true
+  },
+  creadoPor: {
+    type: Schema.Types.ObjectId,
+    ref: 'Usuario'
+  },
+  fechaCreacion: {
+    type: Date,
+    default: Date.now
+  },
+  fechaActualizacion: {
+    type: Date,
+    default: Date.now
   }
 }, {
   timestamps: true
 });
 
 // Índices
-jerarquiaUsuariosSchema.index({ subordinadoId: 1 }, { unique: true });
-jerarquiaUsuariosSchema.index({ jefeId: 1 });
-
-// Validación para evitar auto-referencia
-jerarquiaUsuariosSchema.pre('save', function(next) {
-  if (this.subordinadoId.equals(this.jefeId)) {
-    return next(new Error('Un usuario no puede ser jefe de sí mismo'));
-  }
-  next();
-});
+jerarquiaUsuariosSchema.index({ usuarioSuperior: 1 }, { unique: true });
+jerarquiaUsuariosSchema.index({ usuariosSubordinados: 1 });
 
 export const JerarquiaUsuarios = model<IJerarquiaUsuarios>('JerarquiaUsuarios', jerarquiaUsuariosSchema);

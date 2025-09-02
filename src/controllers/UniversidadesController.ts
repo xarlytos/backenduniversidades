@@ -517,6 +517,7 @@ if (totalContactosTitulacion === 0) {
   };
 }
 
+/*
 // Create hierarchy cache once at the beginning
 const jerarquiaCache = new Map<string, string>();
 const todasLasJerarquias = await JerarquiaUsuarios.find({
@@ -655,7 +656,8 @@ console.log('🗺️ Jerarquía cache creado:', jerarquiaCache.size, 'relaciones
                 console.log('🎓 Alumnos finales después de reasignación:', alumnosFinales.length);
                 return alumnosFinales;
               };
-              
+*/
+
               // NUEVO: Crear estructura completa de cursos (1-6) incluso si están vacíos
               const cursosCompletos = [];
               for (let cursoNum = 1; cursoNum <= 6; cursoNum++) {

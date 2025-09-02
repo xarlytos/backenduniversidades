@@ -376,12 +376,13 @@ export class ContactosController {
       console.log('👑 Usuario es ADMIN - sin filtros');
       return []; // Admin ve todos, no aplicar filtro
     }
-
-    // Para comerciales, obtener sus contactos y los de sus subordinados
-    const subordinados = await ContactosController.getSubordinados(usuarioId);
-    const comercialesVisibles = [usuarioId, ...subordinados];
-    
-    console.log(`👥 Comerciales visibles para ${usuarioId}:`, comercialesVisibles);
+  
+  // Para comerciales, sin jerarquía - solo sus propios contactos
+  // const subordinados = await ContactosController.getSubordinados(usuarioId);
+  const subordinados: string[] = []; // Temporalmente sin jerarquía
+  const comercialesVisibles = [usuarioId, ...subordinados];
+  
+  console.log(`👥 Comerciales visibles para ${usuarioId}:`, comercialesVisibles);
     
     const contactos = await Contacto.find({
       $or: [
@@ -598,7 +599,8 @@ export class ContactosController {
       }
 
       // Obtener todos los subordinados del comercial
-      const subordinados = await ContactosController.getSubordinados(comercialId);
+      // const subordinados = await ContactosController.getSubordinados(comercialId);
+      const subordinados: string[] = []; // Temporalmente sin jerarquía
       const comercialesIncluidos = [comercialId, ...subordinados];
       
       console.log(`📊 Obteniendo contactos para comercial ${comercialId} y subordinados:`, comercialesIncluidos);

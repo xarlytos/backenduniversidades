@@ -49,20 +49,16 @@ app.get('/health', (req, res) => {
 
 // Rutas públicas
 app.use('/api/auth', authRoutes);
-
-// Ruta de usuarios (incluye ruta pública para crear admin)
-console.log('🔧 Configurando ruta de usuarios');
 app.use('/api/usuarios', usuariosRoutes);
 
-// Middleware de autenticación para rutas protegidas
-console.log('🔒 Aplicando middleware de autenticación');
-app.use('/api', authenticateToken);
+// Rutas protegidas (aplicar middleware individualmente)
+app.use('/api/contactos', authenticateToken, contactosRoutes);
+app.use('/api/estadisticas', authenticateToken, estadisticasRoutes);
+app.use('/api/universidades', authenticateToken, universidadesRoutes);
+app.use('/api/titulaciones', authenticateToken, titulacionesRoutes);
 
-// Rutas protegidas
-app.use('/api/contactos', contactosRoutes);
-app.use('/api/estadisticas', estadisticasRoutes);
-app.use('/api/universidades', universidadesRoutes);
-app.use('/api/titulaciones', titulacionesRoutes);
+// ELIMINAR esta línea que está causando el problema:
+// app.use('/api', authenticateToken);
 
 // Middleware de manejo de errores
 app.use(errorHandler);

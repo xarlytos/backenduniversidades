@@ -264,7 +264,7 @@ export class UsuariosController {
       if (permisosAAsignar.length > 0) {
         console.log('🔑 Asignando', permisosAAsignar.length, 'permisos al usuario');
         const permisosValidos = await Permiso.find({ _id: { $in: permisosAAsignar } });
-        console.log('🔑 Permisos válidos encontrados:', permisosValidos.length);
+        console.log('🔑 Permisos validos encontrados:', permisosValidos.length);
         
         const usuarioPermisos = permisosValidos.map(permiso => ({
           usuarioId: nuevoUsuario._id,
